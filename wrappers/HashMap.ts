@@ -42,7 +42,7 @@ export class HashMap implements Contract {
     async sendSet(provider: ContractProvider, via: Sender, value: bigint, opts: {
         queryId: bigint,
         key: bigint,
-        value: bigint,
+        value: Slice,
         validUntil: bigint
     }) {
         await provider.internal(
@@ -54,6 +54,7 @@ export class HashMap implements Contract {
                     .storeUint(opts.queryId, 64)
                     .storeUint(opts.key, 256)
                     .storeUint(opts.validUntil, 64)
+                    .storeSlice(opts.value)
                     .endCell()
             }
         )

@@ -5,7 +5,7 @@ cell load_data() {
     slice ds = data.begin_parse();
     if (ds.slice_bits() == 0) {
         return new_dict();
-    }else {
+    } else {
         return data;
     }
 }
@@ -39,7 +39,7 @@ cell load_data() {
     if (dic.dict_empty?()) {
         ;; set a null dict in here
         set_data(begin_cell().end_cell());
-    }else {
+    } else {
         set_data(dic);
     }
 

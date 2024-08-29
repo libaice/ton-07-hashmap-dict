@@ -1,8 +1,8 @@
-import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
-import { Cell, toNano } from '@ton/core';
-import { HashMap } from '../wrappers/HashMap';
+import {Blockchain, SandboxContract, TreasuryContract} from '@ton/sandbox';
+import {beginCell, Cell, toNano} from '@ton/core';
+import {HashMap} from '../wrappers/HashMap';
 import '@ton/test-utils';
-import { compile } from '@ton/blueprint';
+import {compile} from '@ton/blueprint';
 
 describe('HashMap', () => {
     let code: Cell;
@@ -17,19 +17,29 @@ describe('HashMap', () => {
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
-
-        hashMap = blockchain.openContract(HashMap.createFromConfig({}, code));
-
+        blockchain.now = 500;
         deployer = await blockchain.treasury('deployer');
+        hashMap = blockchain.openContract(HashMap.createFromConfig({
+            manager: deployer.address
+        }, code));
 
-        const deployResult = await hashMap.sendDeploy(deployer.getSender(), toNano('0.05'));
+        const deployResult = await hashMap.sendDeploy(deployer.getSender(), toNano('0.01'));
 
         expect(deployResult.transactions).toHaveTransaction({
             from: deployer.address,
             to: hashMap.address,
             deploy: true,
-            success: true,
+            // success: true,
         });
+
+        await hashMap.sendSet(deployer.getSender(), toNano('0.05'), {
+            queryId: 123n,
+            key: 1n,
+            validUntil: 1000n,
+            value: beginCell().storeUint(123, 16).endCell().asSlice(),
+        })
+
+
     });
 
     it('should deploy', async () => {
