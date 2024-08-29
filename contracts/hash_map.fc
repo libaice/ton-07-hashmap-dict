@@ -1,5 +1,16 @@
 #include "imports/stdlib.fc";
 
 () recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
+    int op = in_msg_body~load_uint(32);
+    int query_id = in_msg_body~load_uint(64);
 
+    cell data = get_data();
+    slice ds = data.begin_parse();
+    cell dic = ds.slice_bits() == 0 ? new_dict() : data;
+    if (op == 1) {
+
+    } elseif (op == 2) {
+
+    }
+    throw(1001);
 }
