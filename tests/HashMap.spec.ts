@@ -3,6 +3,7 @@ import {beginCell, Cell, toNano} from '@ton/core';
 import {HashMap} from '../wrappers/HashMap';
 import '@ton/test-utils';
 import {compile} from '@ton/blueprint';
+import exp from "node:constants";
 
 describe('HashMap', () => {
     let code: Cell;
@@ -89,16 +90,79 @@ describe('HashMap', () => {
         });
 
         let [validUntil, value] = await hashMap.getByKey(1n);
-        console.log('validUntil ', validUntil);
-        console.log('value ', value);
+        expect(validUntil).toEqual(1000n);
+        expect(value).toEqualSlice(
+            beginCell().storeUint(123, 16).endCell().asSlice()
+        );
+        // console.log('validUntil ', validUntil);
+        // console.log('value ', value);
+
+        blockchain.now = 1001;
+
+        await hashMap.sendClearOldValues(deployer.getSender(), toNano('0.05'), {
+            queryId: 123n
+        });
+        await expect(hashMap.getByKey(1n)).rejects.toThrow();
+
+        [validUntil, value] = await hashMap.getByKey(2n);
+        expect(validUntil).toEqual(2000n);
+        expect(value).toEqualSlice(
+            beginCell().storeUint(234, 16).endCell().asSlice()
+        );
+
+        [validUntil, value] = await hashMap.getByKey(3n);
+        expect(validUntil).toEqual(3000n);
+        expect(value).toEqualSlice(
+            beginCell().storeUint(345, 16).endCell().asSlice()
+        );
+
+        blockchain.now = 3001;
+
+        await hashMap.sendClearOldValues(deployer.getSender(), toNano('0.05'), {
+            queryId: 123n,
+        });
+
+        await expect(hashMap.getByKey(2n)).rejects.toThrow();
+        await expect(hashMap.getByKey(3n)).rejects.toThrow();
     });
 
-
-    it('should throw on wrong opcode', async () => {
-
-    });
+    //
+    // it('should throw on bad query', async () => {
+    //     const result = await deployer.send({
+    //         to: hashMap.address,
+    //         value: toNano('0.05'),
+    //         body: beginCell()
+    //             .storeUint(2, 32)
+    //             .storeUint(123, 64)
+    //             .storeStringTail('This string should not be here!')
+    //             .endCell(),
+    //     });
+    //     expect(result.transactions).toHaveTransaction({
+    //         from: deployer.address,
+    //         to: hashMap.address,
+    //         exitCode: 12,
+    //         success: false,
+    //     });
+    // });
 
     it('should throw on wrong query', async () => {
+        const result = await deployer.send({
+            to: hashMap.address,
+            value: toNano('0.05'),
+            body: beginCell()
+                .storeUint(2, 32)
+                .storeUint(123, 64)
+                .storeStringTail('This string should not be here!')
+                .endCell(),
+        });
+
+        // expect(result.transactions).toHaveTransaction({
+        //     from: deployer.address,
+        //     to: hashMap.address,
+        //     success: false,
+        // });
+
+        console.log(result.transactions);
 
     });
 
