@@ -34,14 +34,17 @@ cell load_data() {
                 }
             }
         } until (~ f);
+
+        if (dic.dict_empty?()) {
+            ;; set a null dict in here
+            set_data(begin_cell().end_cell());
+        } else {
+            set_data(dic);
+        }
+
+        return ();
     }
 
-    if (dic.dict_empty?()) {
-        ;; set a null dict in here
-        set_data(begin_cell().end_cell());
-    } else {
-        set_data(dic);
-    }
 
     throw(1001);
 }
